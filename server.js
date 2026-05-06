@@ -1,22 +1,29 @@
-import express from "express";
+import express, { application } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
-import registerRoutes from "./routes/register.auth.js";
-import loginRoutes from "./routes/login.auth.js";
+import bodyParser from "body-parser";
 import errorHandler from "./middlewares/error.js";
+import authRoutes from "./routes/auth.route.js";
+import orderRoutes from "./routes/order.route.js";
+import webhookRoutes from "./routes/webhook.route.js";
 
 dotenv.config();
-const PORT = process.env.PORT;
+await connectDB();
 
+const PORT = process.env.PORT;
 const app = express();
+
+app.use(
+  "/webhooks/razorpay", 
+  bodyParser.raw({ type: "application/json" }),
+  webhookRoutes,
+);
 app.use(express.json());
 app.use(cors());
 
-await connectDB();
-
-app.use("/api/auth", registerRoutes);
-app.use("/api/auth", loginRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/orders", orderRoutes);
 
 app.use(errorHandler);
 
