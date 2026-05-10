@@ -10,7 +10,9 @@ const razorpayWebhookService = async (req) => {
     .digest("hex");
 
   if (signature !== expectedSignature) {
-    return;
+    const error = new Error("Invalid signature");
+    error.statusCode = 400;
+    throw error;
   }
   const event = JSON.parse(req.body.toString());
   if (!["payment.captured", "payment.failed"].includes(event.event)) {
@@ -25,6 +27,7 @@ const razorpayWebhookService = async (req) => {
   if (!order) return;
 
   if (["payment_success", "payment_failed"].includes(order.status)) return;
+  
   if (event.event === "payment.captured") {
     order.status = "payment_success";
     order.providerPaymentId = paymentEntity.id;

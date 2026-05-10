@@ -6,29 +6,7 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-const createProviderOrder = async (orderId) => {
-  const order = await Order.findById(orderId);
-  if (!order) {
-    const error = new Error("Order not found");
-    error.statusCode = 404;
-    throw error;
-  }
-  if (order.status !== "pending") {
-    const error = new Error(
-      "payment already initiated or completed for this order",
-    );
-    error.statusCode = 400;
-    throw error;
-  }
-  if (order.providerOrderId) {
-    return {
-      provider: order.provider,
-      providerOrderId: order.providerOrderId,
-      amount: order.amount,
-      currency: order.currency,
-      key: process.env.RAZORPAY_KEY_ID,
-    };  
-  }
+const createRazorpayOrder = async (order) => {
   const razorpayOrder = await razorpay.orders.create({
     amount: order.amount * 100,
     currency: order.currency,
@@ -48,4 +26,39 @@ const createProviderOrder = async (orderId) => {
   };
 };
 
-export default { createProviderOrder };
+const createProviderOrder = async (orderId) => {
+  const order = await Order.findById(orderId);
+  if (!order) {
+    const error = new Error("Order not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  if (order.status !== "pending") {
+    const error = new Error("payment already initiated or completed ");
+    error.statusCode = 404;
+    throw error;
+  }
+  return await createRazorpayOrder(order);
+};
+
+const retryPayment = async (orderId) => {
+  const order = await Order.findById(orderId);
+  if (!order) {
+    const error = new Error("Order is missing");
+    error.statusCode = 400;
+    throw error;
+  }
+  if (["payment_pending", "payment_success"].includes(order.status)) {
+    const error = new Error("Retry not allowed");
+    error.statusCode = 400;
+    throw error;
+  }
+
+  order.providerOrderId = null;
+  order.providerPaymentId = null;
+  order.failureReason = null;
+
+  return await createRazorpayOrder(orderId);
+};
+
+export default { createProviderOrder, retryPayment };

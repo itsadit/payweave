@@ -1,4 +1,4 @@
-import express, { application } from "express";
+import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import connectDB from "./config/db.js";
@@ -15,7 +15,7 @@ const PORT = process.env.PORT;
 const app = express();
 
 app.use(
-  "/webhooks/razorpay", 
+  "api/webhooks/",
   bodyParser.raw({ type: "application/json" }),
   webhookRoutes,
 );

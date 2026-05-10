@@ -10,7 +10,47 @@ const initiate = async (req, res, next) => {
         message: "orderId is required",
       });
     }
-    const paymentData = await paymentService.createProviderOrder(orderId);
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+    if (order.status === "payment_success") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment already completed",
+      });
+    }
+
+    if (order.status === "payment_pending") {
+      return res.status(400).json({
+        success: false,
+        message: "Payment already in progress",
+      });
+    }
+
+    const paymentData = await paymentService.createProviderOrder(order);
+    return res.status(200).json({
+      success: true,
+      data: paymentData,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const retry = async (req, res, next) => {
+  try {
+    const { oderId } = req.params.orderId;
+    if (!orderId) {
+      res.status(400).json({
+        success: false,
+        message: "orderId is required",
+      });
+    }
+    const paymentData = paymentService.retryPayment(orderId);
     return res.status(200).json({
       success: true,
       data: paymentData,
@@ -22,4 +62,5 @@ const initiate = async (req, res, next) => {
 
 export default {
   initiate,
+  retry,
 };
