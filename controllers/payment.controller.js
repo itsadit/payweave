@@ -43,14 +43,29 @@ const initiate = async (req, res, next) => {
 
 const retry = async (req, res, next) => {
   try {
-    const { oderId } = req.params.orderId;
+    const orderId = req.params.orderId;
     if (!orderId) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
         message: "orderId is required",
       });
     }
-    const paymentData = paymentService.retryPayment(orderId);
+
+    const order = await Order.findById(orderId);
+    if (!order) {
+      return res.status(404).json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+    if (order.status !== "payment_failed") {
+      return res.status(400).json({
+        success: false,
+        message: "Retry is only allowed after payment_failed",
+      });
+    }
+
+    const paymentData = await paymentService.retryPayment(order);
     return res.status(200).json({
       success: true,
       data: paymentData,

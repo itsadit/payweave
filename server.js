@@ -15,7 +15,7 @@ const PORT = process.env.PORT;
 const app = express();
 
 app.use(
-  "api/webhooks/",
+  "/api/webhooks/",
   bodyParser.raw({ type: "application/json" }),
   webhookRoutes,
 );

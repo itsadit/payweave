@@ -5,8 +5,6 @@ const handleWebhook = async (req, res, next) => {
     const { provider } = req.params;
     if (provider === "razorpay") {
       await razorpayWebhookService(req);
-    } else if (provider === "stripe") {
-      await stripeWebhookService(req);
     } else {
       return res.status(400).json({
         success: false,

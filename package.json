@@ -1,6 +1,7 @@
 {
-  "name": "payment",
+  "name": "payweave",
   "version": "1.0.0",
+  "description": "Backend-first payment orchestration with webhook-verified state transitions.",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -17,7 +18,7 @@
     "mongodb": "^7.1.1",
     "mongoose": "^9.4.1",
     "morgan": "^1.10.1",
-    "stripe": "^14.0.0",
+    "razorpay": "^2.9.6",
     "zod": "^3.23.8"
   },
   "devDependencies": {

@@ -27,7 +27,7 @@ const orderSchema = new Schema(
     },
     status: {
       type: String,
-      enum: ["success", "pending", "failed"],
+      enum: ["pending", "payment_pending", "payment_success", "payment_failed"],
       default: "pending",
     },
     paymentProvider: {
@@ -39,16 +39,6 @@ const orderSchema = new Schema(
     },
     providerPaymentId: {
       type: String,
-      status: {
-        type: String,
-        enum: [
-          "created",
-          "payment_success",
-          "payment_pending",
-          "payment_failed",
-        ],
-        default: "pending",
-      },
     },
     failureReason: {
       type: String,

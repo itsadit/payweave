@@ -26,23 +26,21 @@ const createRazorpayOrder = async (order) => {
   };
 };
 
-const createProviderOrder = async (orderId) => {
-  const order = await Order.findById(orderId);
+const createProviderOrder = async (order) => {
   if (!order) {
     const error = new Error("Order not found");
     error.statusCode = 404;
     throw error;
   }
   if (order.status !== "pending") {
-    const error = new Error("payment already initiated or completed ");
-    error.statusCode = 404;
+    const error = new Error("payment already initiated or completed");
+    error.statusCode = 400;
     throw error;
   }
   return await createRazorpayOrder(order);
 };
 
-const retryPayment = async (orderId) => {
-  const order = await Order.findById(orderId);
+const retryPayment = async (order) => {
   if (!order) {
     const error = new Error("Order is missing");
     error.statusCode = 400;
@@ -58,7 +56,7 @@ const retryPayment = async (orderId) => {
   order.providerPaymentId = null;
   order.failureReason = null;
 
-  return await createRazorpayOrder(orderId);
+  return await createRazorpayOrder(order);
 };
 
 export default { createProviderOrder, retryPayment };
