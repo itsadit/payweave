@@ -14,6 +14,7 @@ const createRazorpayOrder = async (order) => {
   });
   order.provider = "razorpay";
   order.providerOrderId = razorpayOrder.id;
+  // INVARIANT: once provider order creation succeeds, the internal payment state moves to payment_pending.
   order.status = "payment_pending";
   await order.save();
 
@@ -32,6 +33,8 @@ const createProviderOrder = async (order) => {
     error.statusCode = 404;
     throw error;
   }
+  // INVARIANT: payment initiation is only allowed from pending orders.
+  // The frontend must never directly set payment status.
   if (order.status !== "pending") {
     const error = new Error("payment already initiated or completed");
     error.statusCode = 400;
@@ -46,7 +49,8 @@ const retryPayment = async (order) => {
     error.statusCode = 400;
     throw error;
   }
-  if (["payment_pending", "payment_success"].includes(order.status)) {
+  // INVARIANT: retry is allowed only from payment_failed.
+  if (order.status !== "payment_failed") {
     const error = new Error("Retry not allowed");
     error.statusCode = 400;
     throw error;

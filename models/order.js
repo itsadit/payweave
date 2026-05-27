@@ -29,6 +29,8 @@ const orderSchema = new Schema(
       type: String,
       enum: ["pending", "payment_pending", "payment_success", "payment_failed"],
       default: "pending",
+      // INVARIANT: order.status is a strict payment state machine.
+      // terminal values payment_success and payment_failed must not be overwritten once set.
     },
     paymentProvider: {
       type: String,

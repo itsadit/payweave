@@ -17,6 +17,7 @@ const initiate = async (req, res, next) => {
         message: "Order not found",
       });
     }
+    // INVARIANT: the frontend may only request initiation, it cannot assert payment success.
     if (order.status === "payment_success") {
       return res.status(400).json({
         success: false,
@@ -58,6 +59,7 @@ const retry = async (req, res, next) => {
         message: "Order not found",
       });
     }
+    // INVARIANT: retry is only permitted from payment_failed, never from pending or success.
     if (order.status !== "payment_failed") {
       return res.status(400).json({
         success: false,

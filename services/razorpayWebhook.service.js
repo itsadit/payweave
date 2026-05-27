@@ -9,12 +9,14 @@ const razorpayWebhookService = async (req) => {
     .update(req.body)
     .digest("hex");
 
+  // INVARIANT: only verified webhook payloads can update payment success/failure.
   if (signature !== expectedSignature) {
     const error = new Error("Invalid signature");
     error.statusCode = 400;
     throw error;
   }
   const event = JSON.parse(req.body.toString());
+  // INVARIANT: only Razorpay payment captured/failed events are trusted for status changes.
   if (!["payment.captured", "payment.failed"].includes(event.event)) {
     return;
   }
@@ -26,6 +28,7 @@ const razorpayWebhookService = async (req) => {
   const order = await Order.findOne({ providerOrderId });
   if (!order) return;
 
+  // INVARIANT: terminal states are immutable once set.
   if (["payment_success", "payment_failed"].includes(order.status)) return;
   
   if (event.event === "payment.captured") {
